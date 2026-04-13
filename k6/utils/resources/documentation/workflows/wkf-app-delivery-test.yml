@@ -1,4 +1,7 @@
 # Run pipeline triggered by pull on branch
+# Esse wokflow é para ser utilizado em conjunto com o workflow de scheduled. 
+# O arquivo de teste que será considerado para execução, será o que for definido pelo cron,
+# Foi feito dessa maneira para o Azure (na linguagem do azure), por hora no GitHub ficará em apenas um arquivo todo o processo
 
 name: app-delivery-test
 
