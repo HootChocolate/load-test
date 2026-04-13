@@ -31,6 +31,9 @@ jobs:
       - name: Git - Checkout
         uses: actions/checkout@v4
 
+      - name: Debug - List files
+        run: |
+          ls -R
 
       - name: Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o horário
         run: |
@@ -93,10 +96,11 @@ jobs:
           -e TEAMS_WORKFLOW \
           -e NOTIFY_ON_SUCCESS \
           -v ${{ github.workspace }}/k6/utils:/utils \
-          -v $(pwd):/k6 \
+          -v ${{ github.workspace }}/k6:/k6 \
           -w /k6 \
           -i grafana/k6 run $K6_RUN_FILE_TEST
 
+# -v $(pwd):/k6 \
 
       - name: PublishTestResults - k6 - Test Results
         if: always()
