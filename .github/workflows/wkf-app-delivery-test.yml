@@ -70,15 +70,14 @@ jobs:
 
       - name: Bash - k6 - load/run Test
         env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
-          API_WARMUP_IN_SECONDS: ${{ secrets.API_WARMUP_IN_SECONDS }}
-          API_KEY: ${{ secrets.API_KEY }}
-          SEND_NOTIFICATION: ${{ secrets.SEND_NOTIFICATION }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          API_WARMUP_IN_SECONDS: ${{ vars.API_WARMUP_IN_SECONDS }}
+          SEND_NOTIFICATION: ${{ vars.SEND_NOTIFICATION }}
           TELEGRAM_BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TEAMS_SIG: ${{ secrets.TEAMS_SIG }}
           TEAMS_WORKFLOW: ${{ secrets.TEAMS_WORKFLOW }}
-          NOTIFY_ON_SUCCESS: ${{ secrets.NOTIFY_ON_SUCCESS }}
+          NOTIFY_ON_SUCCESS: ${{ vars.NOTIFY_ON_SUCCESS }}
         run: |
 
           mkdir -p ./k6/api/reports
@@ -87,7 +86,6 @@ jobs:
           docker run --rm \
           -e API_BASE_URL \
           -e API_WARMUP_IN_SECONDS \
-          -e API_KEY \
           -e SEND_NOTIFICATION \
           -e TELEGRAM_BOT_ID \
           -e TELEGRAM_CHAT_ID \
