@@ -31,11 +31,12 @@ jobs:
       - name: Git - Checkout
         uses: actions/checkout@v4
 
-      - name: Debug - List files
+      - name: Debug - Print files
         run: |
-          ls -R
+          ls
 
-      - name: Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o horário
+
+      - name: Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o cron
         run: |
 
           echo "Configuração da execução"
@@ -46,7 +47,7 @@ jobs:
             CRON="${{ github.event.schedule }}"
             echo "Cron executado: $CRON"
 
-            if [[ "$CRON" == "25 0 * * *" ]]; then
+            if [[ "$CRON" == "0 12 * * 1-6" ]]; then
               K6_RUN_FILE_TEST="./index.js"
 
             elif [[ "$CRON" == "0 4 * * *" ]]; then
