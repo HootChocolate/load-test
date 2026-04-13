@@ -67,12 +67,7 @@ jobs:
         run: |
           echo "Files:"
           ls -R
-
-      - name: Enabled cron
-        run: |
-          echo "Cron trigger:"
-          echo "${{ github.event.schedule }}"
-
+          
       - name: Bash - k6 - load/run Test
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
