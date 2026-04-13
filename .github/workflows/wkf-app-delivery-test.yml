@@ -31,11 +31,6 @@ jobs:
       - name: Git - Checkout
         uses: actions/checkout@v4
 
-      - name: Debug - Print files
-        run: |
-          ls
-
-
       - name: Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o cron
         run: |
 
@@ -64,11 +59,14 @@ jobs:
 
           echo "K6_RUN_FILE_TEST=$K6_RUN_FILE_TEST" >> $GITHUB_ENV
 
-
       - name: Debug - Print Variables
         run: |
           echo "File to run: $K6_RUN_FILE_TEST"
 
+      - name: Debug - Print files
+        run: |
+          echo "Files:"
+          ls -R
 
       - name: Bash - k6 - load/run Test
         env:
