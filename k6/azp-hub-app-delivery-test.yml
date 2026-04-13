@@ -1,0 +1,83 @@
+# Run pipeline triggered by pull on branch
+
+name: app-delivery-test
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["app-delivery-test-scheduled"]
+    types:
+      - completed
+
+# Lock
+concurrency:
+  group: k6-tests
+  cancel-in-progress: false
+
+jobs:
+
+  Test:
+    name: "[azp-app-delivery-test] Testes"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Git - Checkout
+        uses: actions/checkout@v4
+
+
+      - name: Download - Pipeline Artifacts [app-delivery-test-scheduled]
+        uses: actions/download-artifact@v4
+        with:
+          name: K6Files
+
+
+      - name: Script - Restore Pipeline Environment K6Files
+        run: |
+          cat pipeline.env
+          source pipeline.env
+          echo "K6_RUN_FILE_TEST=$K6_RUN_FILE_TEST" >> $GITHUB_ENV
+
+
+      - name: Debug - Print Variables
+        run: |
+          echo "File to run: $K6_RUN_FILE_TEST"
+
+
+      - name: Bash - k6 - load/run Test
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_WARMUP_IN_SECONDS: ${{ secrets.API_WARMUP_IN_SECONDS }}
+          API_KEY: ${{ secrets.API_KEY }}
+          SEND_NOTIFICATION: ${{ secrets.SEND_NOTIFICATION }}
+          TELEGRAM_BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEAMS_SIG: ${{ secrets.TEAMS_SIG }}
+          TEAMS_WORKFLOW: ${{ secrets.TEAMS_WORKFLOW }}
+          NOTIFY_ON_SUCCESS: ${{ secrets.NOTIFY_ON_SUCCESS }}
+        run: |
+
+          mkdir -p ./k6/api/reports
+          chmod -R 777 ./k6/api/reports
+
+          docker run --rm \
+          -e API_BASE_URL \
+          -e API_WARMUP_IN_SECONDS \
+          -e API_KEY \
+          -e SEND_NOTIFICATION \
+          -e TELEGRAM_BOT_ID \
+          -e TELEGRAM_CHAT_ID \
+          -e TEAMS_SIG \
+          -e TEAMS_WORKFLOW \
+          -e NOTIFY_ON_SUCCESS \
+          -v ${{ github.workspace }}/k6/utils:/utils \
+          -v $(pwd):/k6 \
+          -w /k6 \
+          -i grafana/k6 run $K6_RUN_FILE_TEST
+
+
+      - name: PublishTestResults - k6 - Test Results
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: './k6/api/reports/k6-test_results-junit.xml'

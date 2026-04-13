@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+    <testsuites tests="1" failures="0">
+      <testsuite name="k6 thresholds" tests="1" failures="0">
+        <testcase name="checks - rate &gt; 0.99" classname="Unnamed folder" />
+      </testsuite>
+    </testsuites>

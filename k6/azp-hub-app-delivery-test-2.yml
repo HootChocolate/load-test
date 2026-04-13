@@ -1,0 +1,105 @@
+# Esse arquivo tem como função o controle de que testes devem ser executados em determinado horário.
+# Dependendo do horário, é considerado um conjunto de testes.
+# O próprio workflow identifica qual cron disparou a execução,
+# define qual arquivo de teste deve rodar e executa o k6.
+
+name: app-delivery-test
+
+on:
+
+  schedule:
+    - cron: '25 0 * * *'  # um cron
+    - cron: '0 4 * * *'   # outro cron
+
+  workflow_dispatch: # permite executar manualmente
+
+
+# Lock (equivalente ao lockBehavior: sequential)
+concurrency:
+  group: k6-tests
+  cancel-in-progress: false
+
+
+jobs:
+
+  Test:
+    name: "[app-delivery-test] Testes"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Git - Checkout
+        uses: actions/checkout@v4
+
+
+      - name: Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o horário
+        run: |
+
+          echo "Configuração da execução"
+          echo "Event = ${{ github.event_name }}"
+
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+
+            CRON="${{ github.event.schedule }}"
+            echo "Cron executado: $CRON"
+
+            if [[ "$CRON" == "25 0 * * *" ]]; then
+              K6_RUN_FILE_TEST="./index.js"
+
+            elif [[ "$CRON" == "0 4 * * *" ]]; then
+              K6_RUN_FILE_TEST="./api/cliente/bi/index_bi.js"
+
+            fi
+
+          else
+            # execução manual
+            K6_RUN_FILE_TEST="./index.js"
+          fi
+
+          echo "Arquivo escolhido: $K6_RUN_FILE_TEST"
+
+          echo "K6_RUN_FILE_TEST=$K6_RUN_FILE_TEST" >> $GITHUB_ENV
+
+
+      - name: Debug - Print Variables
+        run: |
+          echo "File to run: $K6_RUN_FILE_TEST"
+
+
+      - name: Bash - k6 - load/run Test
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_WARMUP_IN_SECONDS: ${{ secrets.API_WARMUP_IN_SECONDS }}
+          API_KEY: ${{ secrets.API_KEY }}
+          SEND_NOTIFICATION: ${{ secrets.SEND_NOTIFICATION }}
+          TELEGRAM_BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEAMS_SIG: ${{ secrets.TEAMS_SIG }}
+          TEAMS_WORKFLOW: ${{ secrets.TEAMS_WORKFLOW }}
+          NOTIFY_ON_SUCCESS: ${{ secrets.NOTIFY_ON_SUCCESS }}
+        run: |
+
+          mkdir -p ./k6/api/reports
+          chmod -R 777 ./k6/api/reports
+
+          docker run --rm \
+          -e API_BASE_URL \
+          -e API_WARMUP_IN_SECONDS \
+          -e API_KEY \
+          -e SEND_NOTIFICATION \
+          -e TELEGRAM_BOT_ID \
+          -e TELEGRAM_CHAT_ID \
+          -e TEAMS_SIG \
+          -e TEAMS_WORKFLOW \
+          -e NOTIFY_ON_SUCCESS \
+          -v ${{ github.workspace }}/k6/utils:/utils \
+          -v $(pwd):/k6 \
+          -w /k6 \
+          -i grafana/k6 run $K6_RUN_FILE_TEST
+
+
+      - name: PublishTestResults - k6 - Test Results
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: './k6/api/reports/k6-test_results-junit.xml'

@@ -1,0 +1,5 @@
+/k6/node_modules
+/k6/.env
+/k6/package-lock.json
+/k6/api/reports/k6-test_results-junit.xml
+/k6/api/reports/**.xml

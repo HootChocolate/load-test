@@ -1,0 +1,21 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test:index": "dotenv -e .env k6 run ./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "dotenv-cli": "^7.4.2"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.61.0",
+    "clean": "^4.0.2"
+  }
+}

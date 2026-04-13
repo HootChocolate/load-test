@@ -1,0 +1,84 @@
+# Esse arquivo tem como função o controle de que testes devem ser executados em determinado horário.
+# Dependedo do horário, é considerado um conjunto de testes. 
+# Publica-se os artefatos indicando quais devem ser os arquivos considerados, e executa a trigger para disparar a próxima pipeline, que irá recuperar os artefatos,
+# e executar os testes de acordo com os arquivos indicados.
+
+name: app-delivery-test-scheduled
+
+on:
+  schedule:
+    - cron: '25 0 * * *'  # um cron
+    - cron: '0 4 * * *'   # outro cron
+  workflow_dispatch:
+    inputs:
+      TRIGGER_TEST:
+        description: "Executar pipeline app-delivery-test após essa"
+        required: false
+        default: "true"
+
+jobs:
+
+  PublishArtifacts:
+    name: Publish Artifacts  # publica os artefatos, para ser recuperado posteriormente
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Git - Checkout
+        uses: actions/checkout@v4
+
+      - name: Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o horário
+        run: |
+          echo "Configuração para publicação"
+          echo "Event = ${{ github.event_name }}"
+
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            
+            CRON="${{ github.event.schedule }}"
+            echo "Cron executado: $CRON"
+
+            if [[ "$CRON" == "25 0 * * *" ]]; then
+              K6_RUN_FILE_TEST="./index.js"
+
+            elif [[ "$CRON" == "0 4 * * *" ]]; then
+              K6_RUN_FILE_TEST="./api/cliente/bi/index_bi.js"
+
+            fi
+
+          else
+            # execução manual
+            K6_RUN_FILE_TEST="./index.js"
+          fi
+
+          echo "K6_RUN_FILE_TEST=$K6_RUN_FILE_TEST" >> pipeline.env
+          echo "Arquivo pipeline.env criado:"
+          cat pipeline.env
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: K6Files
+          path: pipeline.env
+
+  TriggerPipelines:
+    name: "[app-delivery-test] TriggerPipelines"   # Trigger para disparar a pipeline de teste
+    runs-on: ubuntu-latest
+    needs: PublishArtifacts
+
+    if: ${{ github.event.inputs.TRIGGER_TEST != 'false' }}
+
+    steps:
+
+      - name: Git - Checkout
+        uses: actions/checkout@v4
+
+      - name: Trigger workflow app-delivery-test
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "app-delivery-test.yml",
+              ref: "master"
+            })
