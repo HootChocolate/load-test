@@ -140,3 +140,13 @@ projeto/
 ```
 
 ---
+
+## Fluxo da Pipeline
+
+##### Execução completa:
+![Execução completa](utils/resources/documentation/img/k6-flow.png)
+
+##### Execução por pasta:
+![Execução por pasta](utils/resources/documentation/img/k6-flow-2.png)
+
+
