@@ -9,7 +9,7 @@ import { commonOptions } from "/utils/common_config.js";
 // lib de apoio
 import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
 
-import { pedidos_schema } from './resources/pedidos_schema.js';
+import { pedidos_schema as example_test_schema } from './resources/example_test_schema.js';
 
 // configuração
 export const options = commonOptions;
@@ -73,7 +73,7 @@ export default function () {
 
             let results = responseBody.results[0];
 
-            t.expect(results).toMatchAPISchema(pedidos_schema);
+            t.expect(results).toMatchAPISchema(example_test_schema);
         });
     }
 }

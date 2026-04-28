@@ -38,15 +38,11 @@ export function sendMessage(to, message, format) {
 }
 
 function sendMessageTeams(message) {
-    if (isNullOrEmpty(__ENV.TEAMS_SIG)) {
-        throw new Error(`Deve ser informado o parâmetro 'TEAMS_SIG' do teams para notificação`);
+    if (isNullOrEmpty(__ENV.TEAMS_URL)) {
+        throw new Error(`__ENV.TEAMS_URL deve ser definido, se estiver executando local no arquivo .env, se estiver executando na pipeline deve ser adicionado no conjunto de variáveis e no k6 run (arquivo da pipeline)`);
     }
 
-    if (isNullOrEmpty(__ENV.TEAMS_WORKFLOW)) {
-        throw new Error(`Deve ser informado o parâmetro 'TEAMS_WORKFLOW' do teams para notificação`);
-    }
-
-    const url = `https://prod-21.brazilsouth.logic.azure.com:443/workflows/${__ENV.TEAMS_WORKFLOW}/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=${__ENV.TEAMS_SIG}`
+    const url = `${__ENV.TEAMS_URL}`
 
     const params = {
         headers: {

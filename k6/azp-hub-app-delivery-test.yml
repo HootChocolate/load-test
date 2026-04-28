@@ -1,0 +1,84 @@
+# Run pipeline triggered by pull on branch
+trigger: none
+
+# Lock
+lockBehavior: sequential
+
+# Agent Pool do handle jobs
+# pool:
+#   name: "Example" 
+
+# setting up a pipeline resource that references the schedule-load-test
+# pipeline runs when a run of the schedule-load-test pipeline completes
+resources:
+  pipelines:
+    - pipeline: example
+      source: \example\schedule-load-test # The name of the pipeline referenced by this pipeline resource.
+      trigger:
+        branches:
+          - master
+          - qa
+        tags:
+          - trigger-app-delivery-test
+
+# Set variables once
+variables:
+  - group: k6-variables-example
+
+stages:
+  - stage: Test
+    condition: always()
+    jobs:
+      - job: Test
+        displayName: "[azp-app-delivery-test] Testes"
+        steps:
+          - checkout: self
+            displayName: "Git - Checkout"
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download - Pipeline Artifacts [schedule-load-test]"
+            inputs:
+              buildType: 'specific'
+              project: 'edb1ff6b-70f7-492d-b4cd-84bb1fc8df36'
+              pipeline: 'schedule-load-test'
+              buildVersionToDownload: 'latestFromBranch'
+              branchName: '$(Build.SourceBranch)'
+              targetPath: '$(Pipeline.Workspace)'
+              itemPattern: |
+                K6Files/**
+
+          - script: cat $(Pipeline.Workspace)/K6Files/pipeline.env
+            displayName: 'Script - Restore Pipeline Environment K6Files'
+
+          - task: Bash@3
+            displayName: "Debug - Print Variables"
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "File to run: $(K6_RUN_FILE_TEST)"
+
+          - task: Bash@3
+            displayName: "Bash - k6 - load/run Test"
+            inputs:
+              targetType: 'inline'
+              script: |
+                mkdir -p ./k6/api/reports
+                chmod -R 777 ./k6/api/reports
+                docker run --rm \
+                -e API_BASE_URL=$(API_BASE_URL) \
+                -e API_WARMUP_IN_SECONDS=$(API_WARMUP_IN_SECONDS) \
+                -e SEND_NOTIFICATION=$(SEND_NOTIFICATION) \
+                -e NOTIFY_ON_SUCCESS=$(NOTIFY_ON_SUCCESS) \
+                -v $(Build.SourcesDirectory)/k6/utils:/utils \
+                -v $(pwd):/k6 \
+                -w /k6 \
+                -i grafana/k6 run $(K6_RUN_FILE_TEST)
+
+          - task: PublishTestResults@2
+            displayName: "PublishTestResults - k6 - Test Results"
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: './k6/api/reports/k6-test_results-junit.xml'
+              failTaskOnMissingResultsFile: true
+              testRunTitle: 'k6 - Load/Run Test'

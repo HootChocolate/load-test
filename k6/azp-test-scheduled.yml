@@ -1,0 +1,88 @@
+# Esse arquivo tem como função o controle de que testes devem ser executados em determinado horário.
+# Dependedo do horário, é considerado um conjunto de testes. 
+# Publica-se os artefatos indicando quais devem ser os arquivos considerados, e executa a trigger para disparar a próxima pipeline, que irá recuperar os artefatos,
+# e executar os testes de acordo com os arquivos indicados.
+
+trigger: none
+
+parameters:
+  - name: TRIGGER_TEST
+    displayName: Executar pipeline app-delivery-test após essa
+    type: boolean
+    default: true
+
+variables:
+- name: K6_RUN_FILE_TEST  # Salvará aqui o nome dos arquivos que devem ser considerados para execução
+  value: ""
+
+schedules:
+  - cron: '25 0 * * *'  # um cron - Executa todos os testes
+    displayName: 'INDEX'
+    branches:
+      include:
+        - master
+    always: true
+  
+  - cron: '0 4 * * *' # outro cron - Executa um conjunto de teste
+    displayName: 'INDEX_EXAMPLE'
+    branches:
+      include:
+        - master
+    always: true
+
+
+jobs:
+  - job: PublishArtifacts
+    displayName: "Publish Artifacts"  # publica os artefatos, para ser recuperado posteriormente
+    steps:
+      - checkout: none
+        displayName: "Git - Checkout"
+
+      - script: |
+          echo "Configuração para publicação"
+          echo "Build.Reason = $(Build.Reason)"
+          echo "Build.DefinitionName = $(Build.DefinitionName)"
+
+          if [[ "$(Build.Reason)" == "Schedule" ]]; then
+            echo "Build.CronSchedule.DisplayName= $(Build.CronSchedule.DisplayName)"
+            
+            if [[ "$(Build.CronSchedule.DisplayName)" == "INDEX" ]]; then
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./index.js"
+            elif [[ "$(Build.CronSchedule.DisplayName)" == "INDEX_EXAMPLE" ]]; then
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./api/project/index_example.js"
+            fi
+          else
+            if [[ "$(Build.Reason)" == "Manual" ]]; then
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./index.js"
+            fi
+          fi
+        displayName: "Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o horário"
+
+      - task: CmdLine@2
+        displayName: "Set variables"
+        inputs:
+          script: |
+            echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]$(K6_RUN_FILE_TEST)" >> $(Pipeline.Workspace)/pipeline.env
+            echo "Variáveis adicionadas no arquivo pipeline.env"
+            echo K6_RUN_FILE_TEST: $(K6_RUN_FILE_TEST)
+
+      - task: PublishPipelineArtifact@1 # publica os artefatos
+        inputs:
+          targetPath: '$(Pipeline.Workspace)'
+          artifact: 'K6Files'
+          publishLocation: 'pipeline'
+  
+  - job: TriggerPipelines 
+    displayName: "[app-delivery-test] TriggerPipelines"   # Trigger para disparar a pipeline de teste
+    dependsOn: PublishArtifacts
+    steps:
+      - checkout: none
+        displayName: "Git - Checkout"
+
+      - task: PowerShell@2
+        displayName: "PowerShell - AddBuildTag - Trigger Test"
+        condition: eq('${{ parameters.TRIGGER_TEST }}', true)
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo "##vso[build.addbuildtag]trigger-app-delivery-test"

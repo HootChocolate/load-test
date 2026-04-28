@@ -5,9 +5,9 @@ import { commonOptions } from "/utils/common_config.js";
 import { apiSleepOnWarmup } from '/utils/k6_utils.js';
 
 // importa os warmup
-import { warmupAPI as warmup_pedidos } from './analise_dados/pedidos/pedidos_test.js';
+import { warmupAPI as warmup_example_test } from './conjunto_example/example_test/example_test.js';
 // importa os testes
-import test_pedidos from './analise_dados/pedidos/pedidos_test.js';
+import test_example from './conjunto_example/example_test/example_test.js';
 
 
 //libs de apoio
@@ -26,8 +26,8 @@ export function setup() {
  * Adicione aqui os warmup de testes
  */
 export function warmupAPI() {
-    describe('Warmup testes pasta BI', async (t) => {
-        warmup_pedidos();
+    describe('Warmup testes pasta Example', async (t) => {
+        warmup_example_test();
     });
 }
 
@@ -36,8 +36,8 @@ export function warmupAPI() {
  * Adicione aqui os testes individuais
  */
 export default function () {
-    group('Pedidos', () => {
-        test_pedidos();
+    group('Teste', () => {
+        test_example();
     })
 }
 

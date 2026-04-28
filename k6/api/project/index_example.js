@@ -2,8 +2,8 @@
 import { group } from "k6";
 import { generateReportAndNotify } from '/utils/notifications.js';
 // bi
-import { warmupAPI as warmup_bi } from './bi/index_bi.js';
-import index_bi from './bi/index_bi.js';
+import { warmupAPI as warmup_example_conjunto } from './example/index_conjunto_example.js';
+import index_example_conjunto from './example/index_conjunto_example.js';
 
 //libs de apoio
 import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
@@ -23,16 +23,16 @@ export function setup() {
 }
 
 export function warmupAPI() {
-    describe('Warmup index Cliente', async (t) => {
-        warmup_bi();
+    describe('Warmup index example project', async (t) => {
+        warmup_example_conjunto();
         // demais testes do conjunto de teste
     });
 }
 
 // execucao
 export default function () {
-    group('BI tests', () => {
-        index_bi()
+    group('Conjunto example tests', () => {
+        index_example_conjunto()
     });
 }
 

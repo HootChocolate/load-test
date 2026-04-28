@@ -119,34 +119,24 @@ Configurações:
 
 ```
 projeto/
-├── k6/                          # Diretório principal
-├──── api/                       # Testes divididos por funcoes
-├────── cliente/
-├────── index_cliente.js
-├──────── bi/                    # Serviços de 'bi'
-├────────── index_bi.js
-├────────── analise_dados/      
-├──────────── pedidos/
-│               ├── resources/
-│               ├── pedidos_test.js
+├── k6/                             # Diretório principal
+├──── api/                          # Testes divididos por funcoes
+├────── project/                    # Nome do projeto que será testado
+├────── index_example.js            # index do projeto - chama todos os testes do conjunto
+├──────── conjunto_example/         # Conjunto de teste para uma função do projeto
+├────────── index_example.js        # chama todos os testes do conjunto
+├────────── example_test/           # um teste de exemplo
+├──────────── example/              # nome do teste
+│               ├── resources/      # arquivos para o teste
+│               ├── example_test.js # arquivo do teste
 ├──────── outros/                # Outros serviços 
 ├──────────── outros/
 │               ├── resources/
 │               ├── outros_test.js
 ├──── utils/
 ├───── resources/
-├── index.js
+├── index.js  # arquivo index principal, que chama os outros index
 └── package.json
 ```
 
 ---
-
-## Fluxo da Pipeline
-
-##### Execução completa:
-![Execução completa](utils/resources/documentation/img/k6-flow.png)
-
-##### Execução por pasta:
-![Execução por pasta](utils/resources/documentation/img/k6-flow-2.png)
-
-

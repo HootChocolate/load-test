@@ -3,8 +3,9 @@ import { group } from 'k6';
 import { generateReportAndNotify } from '/utils/notifications.js'
 
 // um import para warmUp e um para executar a default function
-import { warmupAPI as warmupAPI_cliente } from './api/cliente/index_cliente.js';
-import index_cliente_test from './api/cliente/index_cliente.js';
+import { warmupAPI as warmupAPI_example_project } from './api/project/index_example.js';
+
+import index_example_project from './api/project/index_example.js';
 
 
 import { commonOptions } from '/utils/common_config.js';
@@ -20,15 +21,15 @@ export const options = commonOptions;
  * Todos os setup precisam tem a chamada warmup e o sleepOnWarmup.
  */
 export function setup() {    
-    warmupAPI_cliente();
+    warmupAPI_example_project();
 
     apiSleepOnWarmup();
 }
 
 // execução
 export default function () {
-    group('Cliente', () => {
-        index_cliente_test();
+    group('Example project', () => {
+        index_example_project();
     });
     // demais grupos do conjunto de teste
 }
