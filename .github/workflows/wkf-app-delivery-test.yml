@@ -46,7 +46,7 @@ jobs:
               K6_RUN_FILE_TEST="./index.js"
 
             elif [[ "$CRON" == "0 4 * * *" ]]; then
-              K6_RUN_FILE_TEST="./api/cliente/bi/index_bi.js"
+              K6_RUN_FILE_TEST="./api/project/index_example.js"
 
             fi
 
