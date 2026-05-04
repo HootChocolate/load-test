@@ -42,8 +42,8 @@ jobs:
             CRON="${{ github.event.schedule }}"
             echo "Cron executado: $CRON"
 
-            if [[ "$CRON" == "0 12 * * 1-6" ]]; then
-              K6_RUN_FILE_TEST="./index.js"
+            if [[ "$CRON" == "45 11 * * *" ]]; then
+              K6_RUN_FILE_TEST="./k6/index.js"
 
             elif [[ "$CRON" == "0 4 * * *" ]]; then
               K6_RUN_FILE_TEST="./api/project/index_example.js"
@@ -62,11 +62,12 @@ jobs:
       - name: Debug - Print Variables
         run: |
           echo "File to run: $K6_RUN_FILE_TEST"
+          echo "GITHUB_ENV: $GITHUB_ENV"
 
-      - name: Debug - Print files
-        run: |
-          echo "Files:"
-          ls -R
+      # - name: Debug - Print files
+      #   run: |
+      #     echo "Files:"
+      #     ls -R
           
       - name: Bash - k6 - load/run Test
         env:
