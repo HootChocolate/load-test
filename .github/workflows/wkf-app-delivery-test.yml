@@ -30,13 +30,13 @@ jobs:
       matrix:
         include:
           - cron: '50 9 * * *'  # Today at 3:16 AM
-            test_file: './k6/index.js' 
+            test_file: './index.js' 
 
           # - cron: '0 4 * * *' # Today at 12:53 AM
           #   test_file: './api/project/index_example.js'
             
           - cron: '0 4 * * *'
-            test_file: './k6/api/project/example/conjunto_example/example_test/example_test.js'
+            test_file: './api/project/example/conjunto_example/example_test/example_test.js'
 
     steps:
 
