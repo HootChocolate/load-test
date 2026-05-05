@@ -4,7 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test:index": "dotenv -e .env k6 run ./index.js"
+    "test:index": "dotenv -e .env k6 run ./index.js",
+    "test:example_test": "dotenv -e .env k6 run ./api/project/example/conjunto_example/example_test/example_test.js"
   },
   "keywords": [],
   "author": "",
