@@ -31,9 +31,6 @@ jobs:
         include:
           - cron: '20 10 * * *'  # 10 = 7
             test_file: './index.js' 
-
-          # - cron: '0 4 * * *' # Today at 12:53 AM
-          #   test_file: './api/project/index_example.js'
             
           - cron: '25 10 * * *'
             test_file: './api/project/example/conjunto_example/example_test/example_test.js'
