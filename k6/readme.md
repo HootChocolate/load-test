@@ -140,3 +140,8 @@ projeto/
 ```
 
 ---
+
+
+## Fluxo da Pipeline
+
+![Fluxo da Pipeline](k6/utils/resources/images/flow.jpg)
