@@ -144,4 +144,8 @@ projeto/
 
 ## Fluxo da Pipeline
 
-![Fluxo da Pipeline](k6/utils/resources/images/flow.jpg)
+- Execução completa, todos os testes:    
+![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow.png)
+
+- Execução por pasta, ou única:    
+![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow-2.png)
