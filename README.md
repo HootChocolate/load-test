@@ -1,5 +1,13 @@
 ## Documentação de Testes de API com k6
-> Documento destinado a explicar os teste de API com k6, divisão de pastas, criação de novos testes, etc.   
+> Documento destinado a explicar os teste de API com k6, divisão de pastas, criação de novos testes, etc.
+
+## Fluxograma:
+
+- Execução completa, todos os testes:    
+![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow.png)
+
+- Execução por pasta, ou única:    
+![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow-2.png)
 
 ### 1. Pré-requisitos
 - Node.js
@@ -140,12 +148,3 @@ projeto/
 ```
 
 ---
-
-
-## Fluxo da Pipeline
-
-- Execução completa, todos os testes:    
-![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow.png)
-
-- Execução por pasta, ou única:    
-![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow-2.png)
