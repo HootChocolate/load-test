@@ -167,4 +167,6 @@ ___
 ```
   
 
-  
+  ### 7. Exemplo de notificação:   
+
+  ![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow-notify.png)
