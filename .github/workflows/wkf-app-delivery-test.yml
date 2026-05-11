@@ -53,12 +53,12 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           API_WARMUP_IN_SECONDS: ${{ vars.API_WARMUP_IN_SECONDS }}
           TELEGRAM_BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
           NOTIFY_ON_SUCCESS: ${{ vars.NOTIFY_ON_SUCCESS }}
           SEND_NOTIFICATION: ${{ vars.SEND_NOTIFICATION }}
           SEND_NOTIFICATION_TO: ${{ vars.SEND_NOTIFICATION_TO }}
           K6_OUT: experimental-prometheus-rw
-          K6_PROMETHEUS_RW_SERVER_URL: ${{ secrets.K6_PROMETHEUS_URL }}
+          K6_PROMETHEUS_RW_SERVER_URL: ${{ vars.K6_PROMETHEUS_URL }}
           K6_PROMETHEUS_RW_USERNAME: ${{ secrets.K6_PROMETHEUS_USER }}
           K6_PROMETHEUS_RW_PASSWORD: ${{ secrets.K6_PROMETHEUS_PASSWORD }}
         run: |
