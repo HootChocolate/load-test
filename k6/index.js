@@ -20,7 +20,8 @@ export const options = commonOptions;
  * 
  * Todos os setup precisam tem a chamada warmup e o sleepOnWarmup.
  */
-export function setup() {    
+export function setup() {
+
     warmupAPI_example_project();
 
     apiSleepOnWarmup();

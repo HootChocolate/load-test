@@ -7,24 +7,35 @@ trigger: none
 
 parameters:
   - name: TRIGGER_TEST
-    displayName: Executar pipeline app-delivery-test após essa
+    displayName: Executar pipeline de teste após essa
     type: boolean
     default: true
+  - name: OVERRIDE_FILE
+    displayName: "Execução manual - File to Run (opcional)"
+    type: string
+    default: ' '
 
 variables:
 - name: K6_RUN_FILE_TEST  # Salvará aqui o nome dos arquivos que devem ser considerados para execução
   value: ""
 
 schedules:
-  - cron: '25 0 * * *'  # um cron - Executa todos os testes
-    displayName: 'INDEX'
+
+  - cron: '0 3 * * *' # Executa meia noite
+    displayName: 'All - Midnight Build'
+    branches:
+      include:
+        - master
+    always: true
+  - cron: '0 4 * * *'  # Executa carga 1 da manha
+    displayName: 'Load Example'
     branches:
       include:
         - master
     always: true
   
-  - cron: '0 4 * * *' # outro cron - Executa um conjunto de teste
-    displayName: 'INDEX_EXAMPLE'
+  - cron: '0 5 * * *'  # Executa carga 2 da manha
+    displayName: 'Load Another Example'
     branches:
       include:
         - master
@@ -46,18 +57,36 @@ jobs:
           if [[ "$(Build.Reason)" == "Schedule" ]]; then
             echo "Build.CronSchedule.DisplayName= $(Build.CronSchedule.DisplayName)"
             
-            if [[ "$(Build.CronSchedule.DisplayName)" == "INDEX" ]]; then
-              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./index.js"
-            elif [[ "$(Build.CronSchedule.DisplayName)" == "INDEX_EXAMPLE" ]]; then
-              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./api/project/index_example.js"
+            if [[ "$(Build.CronSchedule.DisplayName)" == "All - Midnight Build" ]]; then  # executo todos
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./k6/index.js"
+              
+            elif [[ "$(Build.CronSchedule.DisplayName)" == "Load Example" ]]; then # carga
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./k6/api/project/example/conjunto_example/example_test/example_test.js"
+
+            elif [[ "$(Build.CronSchedule.DisplayName)" == "Load Another Example" ]]; then # carga
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./k6/api/project/example/another_example/another_example_test/another_example_test.js"
             fi
-          else
-            if [[ "$(Build.Reason)" == "Manual" ]]; then
-              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./index.js"
+
+          elif [[ "$(Build.Reason)" == "Manual" ]]; then
+            
+            OVERRIDE_FILE="${{ parameters.OVERRIDE_FILE }}"
+            echo "OVERRIDE_FILE = $OVERRIDE_FILE"
+
+            if [[ -n "${OVERRIDE_FILE// /}" ]]; then # se foi informado um arquivo para executação - remove espaços e verifica se sobrou algo
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]$OVERRIDE_FILE"
+            else
+              echo "##vso[task.setvariable variable=K6_RUN_FILE_TEST;]./k6/index.js"
             fi
+
           fi
         displayName: "Define aquivo de teste para o K6_RUN_FILE_TEST, conforme o horário"
 
+      - task: CmdLine@2
+        displayName: "Debug variables"
+        inputs:
+          script: |
+            echo "Execuçao: $(Build.CronSchedule.DisplayName)"
+            echo K6_RUN_FILE_TEST: $(K6_RUN_FILE_TEST)
       - task: CmdLine@2
         displayName: "Set variables"
         inputs:

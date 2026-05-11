@@ -12,6 +12,8 @@ import test_example from './conjunto_example/example_test/example_test.js';
 
 //libs de apoio
 import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
+import { warmupAPI as warmup_another_example_test } from "./another_example/another_example_test/another_example_test.js";
+import another_example_test from "./another_example/another_example_test/another_example_test.js";
 
 // configuracao
 export const options = commonOptions;
@@ -28,6 +30,7 @@ export function setup() {
 export function warmupAPI() {
     describe('Warmup testes pasta Example', async (t) => {
         warmup_example_test();
+        warmup_another_example_test();
     });
 }
 
@@ -38,6 +41,11 @@ export function warmupAPI() {
 export default function () {
     group('Teste', () => {
         test_example();
+    })
+
+    group('Outro Teste', () => {
+        test_example();
+        another_example_test();
     })
 }
 

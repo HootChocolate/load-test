@@ -3,3 +3,4 @@
 /k6/package-lock.json
 /k6/api/reports/k6-test_results-junit.xml
 /k6/api/reports/**.xml
+/scripts/utils

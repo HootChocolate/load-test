@@ -2,6 +2,12 @@ import { check, sleep } from "k6";
 import { formatDate } from "./date_utils.js";
 import { isNullOrEmpty } from "./common_utils.js";
 
+import Ajv from 'https://esm.sh/ajv@8';
+const ajv = new Ajv();
+
+// lib de apoio de log
+import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
+
 /**
  * Classe destinada a métodos utilitários do k6
  */
@@ -52,10 +58,66 @@ export function checkStatusResponse(response, status) {
 
     const message = `Status code esperado: ${status} - Status code retornado: ${response.status}${aux_log_err_message}`;
 
-    return check(true, { [message]: response_status_ok });
+    describe('Check status code', () => {
+        check(true, { [message]: response_status_ok });
+    })
 }
 
+export function checkSchema(response, schema, appendMessage) {
+    if (!response || !schema) throw new Error('[checkSchema(responseBody, exampleTestSchema)] required values')
 
+    if (!response.body) {
+        console.error(`${redMsg('ERRO')} [checkSchema] response.body undefined \nStatus: ${response.status}\nErro: ${response.error}\n`);
+        return;
+    }
+
+    let responseBody;
+
+    try {
+        responseBody = JSON.parse(response.body);
+    } catch (error) {
+        console.error(`${redMsg('ERRO')} Error parsing JSON - error:\n`, error, `\n${redMsg('ERRO')} Response Body:\n`, response.body);
+        return;
+    }
+
+    const msg = appendMessage ? `Check schema - ${appendMessage}` : `Check schema`
+
+    // k6Log(JSON.parse(JSON.stringify(response.body)))
+
+    describe(msg, () => {
+
+        const body = JSON.parse(response.body);
+
+        const validate = ajv.compile(schema);
+
+        const valid = validate(body);
+
+        if (!valid) {
+            console.error(JSON.stringify(validate.errors, null, 2));
+        }
+
+        const validMsg = valid == true ? 'Schema válido' : 'Schema inválido'
+
+        check(valid, {
+            [validMsg]: (val) => val === true,
+        });
+    });
+}
+
+/**
+ * Utilizado para gerar log do k6, visto a necessidade de DEBUG
+ * @param {*} msg 
+ */
+export function k6Log(msg) {
+    const kl = "=========================== k6 Log =============================="
+    const klf = "========================= k6 Log Fim ============================"
+
+    console.log(`
+        ${kl}
+        \n${msg}
+        \n${klf}`
+    )
+}
 /**
  * * Valida que os campos expected e returned sejam iguais;
  *  Caso seja informado no field [IGNORE] ou [WARNING] ou [WARN] ou [IGNORAR] ou [IGNORADO], o check será ignorado e colorido de amarelo
@@ -228,7 +290,7 @@ export function maxDurationResponse(response, duration) {
  */
 export function apiSleepOnWarmup() {
     if (isNullOrEmpty(__ENV.API_WARMUP_IN_SECONDS)) {
-        throw new Error(`API_WARMUP_IN_SECONDS is ${__ENV.API_WARMUP_IN_SECONDS}`);
+        throw new Error(`API_WARMUP_IN_SECONDS must be provided as environment variable\n[__ENV.API_WARMUP_IN_SECONDS]\n`);
     }
 
     console.info(`Waiting for API Warmup => ${__ENV.API_WARMUP_IN_SECONDS} seconds - ${formatDate(new Date(), 'dd/MM/yyyy HH:mm:ss')}`);

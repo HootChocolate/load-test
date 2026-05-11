@@ -1,8 +1,9 @@
 import http from 'k6/http';
-import { checkStatusResponse } from './k6_utils.js';
+import { checkStatusResponse, k6Log } from './k6_utils.js';
 import { body_teams } from './resources/teams/body_to_teams_notification.js';
 import { isNullOrEmpty, nvl } from './common_utils.js';
 import { jUnit, textSummary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.js';
+import { toSentenceCase } from './string_utils.js';
 
 /**
  * to = Switch. Ex: TELEGRAM, TEAMS
@@ -17,23 +18,19 @@ import { jUnit, textSummary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.j
  */
 export function sendMessage(to, message, format) {
 
-    if (!isNullOrEmpty(__ENV.SEND_NOTIFICATION) && __ENV.SEND_NOTIFICATION == 'true') {
-        console.info(`Enviando mensagem para ${to}...`)
+    console.info(`💬 [${toSentenceCase(to)}] Enviando mensagem...`)
 
-        const text = (format ? '```' + format + '\n' + message + '\n```' : message);
+    const text = (format ? '```' + format + '\n' + message + '\n```' : message);
 
-        switch (to) {
-            case 'TELEGRAM':
-                sendMessageTelegram(text)
-                break;
-            case 'TEAMS':
-                sendMessageTeams(text);
-                break;
-            default:
-                throw new Error(`Send Message: ${to} not defined`);
-        }
-    } else {
-        console.warn(`Skip sendMessage __ENV.SEND_NOTIFICATION: ${__ENV.SEND_NOTIFICATION}`);
+    switch (to) {
+        case 'TELEGRAM':
+            sendMessageTelegram(text)
+            break;
+        case 'TEAMS':
+            sendMessageTeams(text);
+            break;
+        default:
+            throw new Error(`Send Message: ${to} not defined`);
     }
 }
 
@@ -88,13 +85,13 @@ function sendMessageTelegram(message) {
         throw new Error(`TELEGRAM_CHAT_ID not defined`);
     }
 
-    const url = `https://api.telegram.org/bot${__ENV.TELEGRAM_BOT_ID}/sendMessage`;
+    const url = `https://api.telegram.org/${__ENV.TELEGRAM_BOT_ID}/sendMessage`;
 
     const body = {
         'chat_id': __ENV.TELEGRAM_CHAT_ID,
-        'parse_mode': 'MarkdownV2',
+        'parse_mode': 'HTML',
         'text': message
-    }
+    }    
 
     const payload = JSON.stringify(body)
 
@@ -106,16 +103,22 @@ function sendMessageTelegram(message) {
 
     const response = http.post(url, payload, params);
 
-    if (checkStatusResponse(response, 200)) {
-        console.info('Mensagem enviada para o Telegram')
-    } else {
-        const err = response.body
+    const responseBodyTelegram = response.body
 
-        if (err.includes('Bad Request: message is too long')) {
-            sendMessage('TELEGRAM', `Erro no envio de mensagem para o Telegram\nBad Request: message is too long`, 'markdown')
-        } else {
-            console.error(`Erro no envio de mensagem para o Telegram\n${err}\n`);
-        }
+    if (responseBodyTelegram.includes('Bad Request: message is too long')) {
+        sendMessage('TELEGRAM', `[Telegram] Erro no envio de mensagem\nBad Request: message is too long`, 'markdown')
+    }
+
+    const parseBody = JSON.parse(responseBodyTelegram)
+    const ok = parseBody.ok
+
+    if (ok) {
+        console.info('💬 [Telegram] Mensagem enviada!')
+    } else {
+        const descriptionErr = parseBody.description 
+        console.error(`💬 [Telegram] Erro no envio da mensagem`);
+        console.error(descriptionErr);
+        
     }
 }
 
@@ -129,8 +132,6 @@ export function generateReportAndNotify(data) {
     const jUnit_report = jUnit(data);
     
     const jUnit_report_alterado = tratarXmlAlterandoTotalizadorDeTeste(data);
-
-    const to = 'TEAMS';
 
     const critical_err = []
 
@@ -148,25 +149,32 @@ export function generateReportAndNotify(data) {
         }
     }
 
-    let mensagem = '';
+    const hasCriticalError = critical_err.length > 0;
+    const shouldNotify = !isNullOrEmpty(__ENV.SEND_NOTIFICATION) && __ENV.SEND_NOTIFICATION === 'true';
+    const notifyOnSuccess = !isNullOrEmpty(__ENV.NOTIFY_ON_SUCCESS) && __ENV.NOTIFY_ON_SUCCESS === 'true';
 
-    if (critical_err.length > 0) { // houve métricas falhadas
+    let generatedReportMessage = '';
 
-        mensagem = generateFilteredReport(text_report, true);
+    if (hasCriticalError) { // houve erros
+        if (shouldNotify) { // foi marcado para notificar
+            generatedReportMessage = generateFilteredReport(text_report, true);
 
-        sendMessage(to, mensagem);
+            sendMessage(__ENV.SEND_NOTIFICATION_TO, generatedReportMessage);
+        } else {
+            console.warn(`Skip sendMessage __ENV.SEND_NOTIFICATION: ${__ENV.SEND_NOTIFICATION}`);
+        }
     } else {
+        // não houve erro, e foi marcado para notificar
+        if (shouldNotify && notifyOnSuccess) {
+            generatedReportMessage = generateFilteredReport(text_report, false);
 
-        // caso necessário notificar quando os testes rodaram sem falhas, informar NOTIFY_ON_SUCCESS=true no .env
-        if (!isNullOrEmpty(__ENV.NOTIFY_ON_SUCCESS) && __ENV.NOTIFY_ON_SUCCESS == 'true') {
-            mensagem = generateFilteredReport(text_report, false);
+            const msg = `Testes executados com sucesso\n\n`;
 
-            sendMessage(to, `\tTestes executados com sucesso\n\n${mensagem}`);
+            sendMessage(__ENV.SEND_NOTIFICATION_TO, `${msg}${generatedReportMessage}`);
         } else {
             console.info(`Não será notificado teste de sucesso. NOTIFY_ON_SUCCESS=${__ENV.NOTIFY_ON_SUCCESS}`);
         }
     }
-    
     
     return {
         stdout: text_report, // imeprime log do k6 no console
@@ -280,7 +288,7 @@ function generateFilteredReport(mensagem, houve_erro) {
 
     // remove caracteres ASCI de cores de logs
     const ansiRegex = /[\u001b\u009b][[()#;?]*(?:(\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~])/g;
-    mensagem_filtrada = mensagem_filtrada.replace(ansiRegex, '');
+    mensagem_filtrada = mensagem_filtrada.replace(ansiRegex, '')
 
     return mensagem_filtrada;
 }

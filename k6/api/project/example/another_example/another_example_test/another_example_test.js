@@ -4,22 +4,21 @@ import http from 'k6/http';
 import { generateReportAndNotify } from '/utils/notifications.js';
 import { apiSleepOnWarmup, checkSchema, checkStatusResponse } from '/utils/k6_utils.js';
 import { commonOptions } from "/utils/common_config.js";
+import anotherExampleTest from "./resources/another_example_test_schema.js";
 
-// lib de apoio
-import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
-
-import exampleTestSchema from './resources/example_test_schema.js';
 
 // configuração
 export const options = {
     stages: [
-        { duration: '30s', target: 20 }, // Sobe de 0 para 20 usuários em 30 segundos
-        { duration: '1m', target: 20 },  // Mantém 20 usuários por 1 minuto
-        { duration: '30s', target: 0 },  // Desce para 0 usuários em 30 segundos
+        { duration: '30s', target: 100 },
+        { duration: '1m', target: 200 },
+        { duration: '2m', target: 300 },
+        { duration: '1m', target: 500 }, // Pico extremo
+        { duration: '30s', target: 0 },
     ],
     thresholds: {
-        // http_req_duration: ['p(95)<500'], // 95% das requisições devem ser < 500ms
-        http_req_failed: ['rate<0.01'],   // Menos de 1% de erro
+        http_req_duration: ['p(95)<2000'],
+        http_req_failed: ['rate<0.05'],
     },
 };
 
@@ -36,7 +35,7 @@ export function warmupAPI() {
 // requisição
 export function callAPI(isWarmup) {
 
-    const url = `${__ENV.API_BASE_URL}/posts/1`;
+    const url = `${__ENV.API_BASE_URL}/comments`;
 
     const params = {
         headers: {
@@ -60,11 +59,11 @@ export function callAPI(isWarmup) {
 
 // execuçao
 export default function () {
-    const response = callAPI(false);
+    const response = callAPI(false)
 
-    checkStatusResponse(response, 200);
-    
-    checkSchema(response, exampleTestSchema, "Request /posts")
+    checkStatusResponse(response, 200)
+
+    checkSchema(response, anotherExampleTest, "Request /comments")
 }
 
 // desmontagem

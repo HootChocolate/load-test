@@ -10,6 +10,11 @@ echo "Criando links simbólicos para k6..."
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-sudo ln -sf "$PROJECT_DIR/utils" /utils
+echo "PROJECT_DIR: $PROJECT_DIR"
+echo "=============== Files ===============" 
+ls $PROJECT_DIR/utils
+echo "=========================================================="
+
+sudo ln -sf "$PROJECT_DIR/utils" "./utils"
 
 echo "Links criados."

@@ -8,12 +8,12 @@ lockBehavior: sequential
 # pool:
 #   name: "Example" 
 
-# setting up a pipeline resource that references the schedule-load-test
-# pipeline runs when a run of the schedule-load-test pipeline completes
+# setting up a pipeline resource that references the load-test-scheduled
+# pipeline runs when a run of the load-test-scheduled pipeline completes
 resources:
   pipelines:
     - pipeline: example
-      source: \example\schedule-load-test # The name of the pipeline referenced by this pipeline resource.
+      source: \example\load-test-scheduled # The name of the pipeline referenced by this pipeline resource.
       trigger:
         branches:
           - master
@@ -36,11 +36,11 @@ stages:
             displayName: "Git - Checkout"
 
           - task: DownloadPipelineArtifact@2
-            displayName: "Download - Pipeline Artifacts [schedule-load-test]"
+            displayName: "Download - Pipeline Artifacts [load-test-scheduled]"
             inputs:
               buildType: 'specific'
               project: 'edb1ff6b-70f7-492d-b4cd-84bb1fc8df36'
-              pipeline: 'schedule-load-test'
+              pipeline: 'load-test-scheduled'
               buildVersionToDownload: 'latestFromBranch'
               branchName: '$(Build.SourceBranch)'
               targetPath: '$(Pipeline.Workspace)'
@@ -62,13 +62,33 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                echo "📂 Diretório atual:"
+                pwd
+
+                echo "📄 Listando arquivos:"
+                ls -la
+
+                echo "📄 Listando $(Build.SourcesDirectory):"
+                ls -la $(Build.SourcesDirectory)
+
+                echo "mkdir report..."
+
                 mkdir -p ./k6/api/reports
                 chmod -R 777 ./k6/api/reports
+                
+                echo "run..."
                 docker run --rm \
                 -e API_BASE_URL=$(API_BASE_URL) \
                 -e API_WARMUP_IN_SECONDS=$(API_WARMUP_IN_SECONDS) \
-                -e SEND_NOTIFICATION=$(SEND_NOTIFICATION) \
+                -e TELEGRAM_BOT_ID=$(TELEGRAM_BOT_ID) \
+                -e TELEGRAM_CHAT_ID=$(TELEGRAM_CHAT_ID) \
                 -e NOTIFY_ON_SUCCESS=$(NOTIFY_ON_SUCCESS) \
+                -e SEND_NOTIFICATION=$(SEND_NOTIFICATION) \
+                -e SEND_NOTIFICATION_TO=$(SEND_NOTIFICATION_TO) \
+                -e K6_OUT=experimental-prometheus-rw \
+                -e K6_PROMETHEUS_RW_SERVER_URL=$(K6_PROMETHEUS_URL) \
+                -e K6_PROMETHEUS_RW_USERNAME=$(K6_PROMETHEUS_USER) \
+                -e K6_PROMETHEUS_RW_PASSWORD=$(K6_PROMETHEUS_PASSWORD) \
                 -v $(Build.SourcesDirectory)/k6/utils:/utils \
                 -v $(pwd):/k6 \
                 -w /k6 \
