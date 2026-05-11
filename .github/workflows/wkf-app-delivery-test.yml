@@ -1,7 +1,6 @@
 # Esse arquivo tem como função o controle de que testes devem ser executados em determinado horário.
 # Dependendo do horário, é considerado um conjunto de testes.
-# O próprio workflow identifica qual cron disparou a execução,
-# define qual arquivo de teste deve rodar e executa o k6.
+# O workflow identifica qual cron disparou a execução
 
 name: app-delivery-test
 
@@ -53,12 +52,15 @@ jobs:
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           API_WARMUP_IN_SECONDS: ${{ vars.API_WARMUP_IN_SECONDS }}
-          SEND_NOTIFICATION: ${{ vars.SEND_NOTIFICATION }}
           TELEGRAM_BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TEAMS_SIG: ${{ secrets.TEAMS_SIG }}
-          TEAMS_WORKFLOW: ${{ secrets.TEAMS_WORKFLOW }}
           NOTIFY_ON_SUCCESS: ${{ vars.NOTIFY_ON_SUCCESS }}
+          SEND_NOTIFICATION: ${{ vars.SEND_NOTIFICATION }}
+          SEND_NOTIFICATION_TO: ${{ vars.SEND_NOTIFICATION_TO }}
+          K6_OUT: experimental-prometheus-rw
+          K6_PROMETHEUS_RW_SERVER_URL: ${{ secrets.K6_PROMETHEUS_URL }}
+          K6_PROMETHEUS_RW_USERNAME: ${{ secrets.K6_PROMETHEUS_USER }}
+          K6_PROMETHEUS_RW_PASSWORD: ${{ secrets.K6_PROMETHEUS_PASSWORD }}
         run: |
 
           mkdir -p ./k6/api/reports
@@ -67,12 +69,15 @@ jobs:
           docker run --rm \
           -e API_BASE_URL \
           -e API_WARMUP_IN_SECONDS \
-          -e SEND_NOTIFICATION \
           -e TELEGRAM_BOT_ID \
           -e TELEGRAM_CHAT_ID \
-          -e TEAMS_SIG \
-          -e TEAMS_WORKFLOW \
           -e NOTIFY_ON_SUCCESS \
+          -e SEND_NOTIFICATION \
+          -e SEND_NOTIFICATION_TO \
+          -e K6_OUT \
+          -e K6_PROMETHEUS_RW_SERVER_URL \
+          -e K6_PROMETHEUS_RW_USERNAME \
+          -e K6_PROMETHEUS_RW_PASSWORD \
           -v ${{ github.workspace }}/k6/utils:/utils \
           -v ${{ github.workspace }}/k6:/k6 \
           -w /k6 \
