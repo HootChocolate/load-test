@@ -63,8 +63,8 @@ jobs:
           K6_PROMETHEUS_RW_PASSWORD: ${{ secrets.K6_PROMETHEUS_PASSWORD }}
         run: |
 
-          mkdir -p ./k6/api/reports
-          chmod -R 777 ./k6/api/reports
+          mkdir -p ./api/reports
+          chmod -R 777 ./api/reports
 
           docker run --rm \
           -e API_BASE_URL \
@@ -85,8 +85,22 @@ jobs:
 
 # -v $(pwd):/k6 \
 
+# Action:
+#
+# - lê arquivos XML JUnit;
+# - cria uma aba de "Checks" no PR/commit;
+# - mostra testes que passaram/falharam;
+# - adiciona annotations no código.
+#
+# O GitHub não possui uma aba "Test" tão completa como o Azure.
+# Os resultados geralmente aparecem em:
+# Pull Request → aba "Checks"
+# Commit → "Checks"
+# Summary da workflow
+# 
+# Caso alterado o path do report, é necessárioo alterar no handleSummary também
       - name: PublishTestResults - k6 - Test Results
         if: always()
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v4  # action
         with:
           report_paths: './api/reports/k6-test_results-junit.xml'
