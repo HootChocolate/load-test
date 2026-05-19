@@ -128,6 +128,7 @@ function sendMessageTelegram(message) {
  * @returns 
  */
 export function generateReportAndNotify(data) {
+    // gera report
     const text_report = textSummary(data, { indent: ' ', enableColors: true })
     const jUnit_report = jUnit(data);
     
@@ -175,9 +176,11 @@ export function generateReportAndNotify(data) {
             console.info(`Não será notificado teste de sucesso. NOTIFY_ON_SUCCESS=${__ENV.NOTIFY_ON_SUCCESS}`);
         }
     }
+
+    // gera documentação
     
     return {
-        stdout: text_report, // imeprime log do k6 no console
+        stdout: text_report, // imprime log do k6 no console
         "./api/reports/k6-test_results-junit.xml": jUnit_report_alterado
     };
 }
@@ -295,5 +298,5 @@ function generateFilteredReport(mensagem, houve_erro) {
 
 export default {
     sendMessage,
-    generateReportAndNotify
+    generateReportAndNotify: generateReportAndNotify
 };

@@ -73,8 +73,8 @@ stages:
 
                 echo "mkdir report..."
 
-                mkdir -p ./k6/api/reports
-                chmod -R 777 ./k6/api/reports
+                mkdir -p ./api/reports
+                chmod -R 777 ./api/reports
                 
                 echo "run..."
                 docker run --rm \
@@ -101,4 +101,3 @@ stages:
               testResultsFormat: 'JUnit'
               testResultsFiles: './k6/api/reports/k6-test_results-junit.xml'
               failTaskOnMissingResultsFile: true
-              testRunTitle: 'k6 - Load/Run Test'
