@@ -89,4 +89,4 @@ jobs:
         if: always()
         uses: mikepenz/action-junit-report@v4
         with:
-          report_paths: './k6/api/reports/k6-test_results-junit.xml'
+          report_paths: './api/reports/k6-test_results-junit.xml'
