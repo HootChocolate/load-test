@@ -7,11 +7,14 @@ name: app-delivery-test
 on:
 
   schedule:
-    - cron: '50 9 * * *'  # um cron
-    - cron: '0 4 * * *'   # load cron
+    - cron: '50 9 * * *'  # index
+    - cron: '25 10 * * *'   # load cron
 
   workflow_dispatch: # permite executar manualmente
 
+permissions:
+  checks: write
+  contents: read
 
 # Lock (equivalente ao lockBehavior: sequential)
 concurrency:
@@ -28,7 +31,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - cron: '20 10 * * *'  # 10 = 7
+          - cron: '50 9 * * *'  # 10 = 7
             test_file: './index.js' 
             
           - cron: '25 10 * * *'
@@ -83,6 +86,12 @@ jobs:
           -w /k6 \
           -i grafana/k6 run ${{ matrix.test_file }}
 
+
+      - name: Debug - Report files
+        if: always()
+        run: |
+          find . -name "*.xml"
+
 # -v $(pwd):/k6 \
 
 # Action:
@@ -103,4 +112,4 @@ jobs:
         if: always()
         uses: mikepenz/action-junit-report@v4  # action
         with:
-          report_paths: './api/reports/k6-test_results-junit.xml'
+          report_paths: './k6/api/reports/k6-test_results-junit.xml'
