@@ -16,7 +16,7 @@
     "docker:state":"systemctl status docker",
     "docker:start":"sudo systemctl start docker",
     "docker:enable-on-init": "sudo systemctl enable docker",
-    "docker:run:grafana": "sudo docker-compose up -d",
+    "docker:run:grafana": "sudo docker compose -f ./scripts/docker-compose.yml up -d",
     "docker:state:grafana": "sudo docker ps",
     "docker:stop:grafana": "sudo docker stop grafana influxdb",
     "docker:database": "sudo docker exec -it influxdb influx -execute 'SHOW DATABASES'",

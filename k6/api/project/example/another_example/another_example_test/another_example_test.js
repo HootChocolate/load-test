@@ -52,8 +52,6 @@ export function callAPI(isWarmup) {
         response = http.get(url, params)
     }
 
-    sleep(1);
-
     return response
 }
 
