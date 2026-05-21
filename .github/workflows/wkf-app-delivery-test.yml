@@ -48,6 +48,7 @@ jobs:
           
       - name: RUN - k6 test
         env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           API_WARMUP_IN_SECONDS: ${{ vars.API_WARMUP_IN_SECONDS }}
           TELEGRAM_BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
