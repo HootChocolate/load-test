@@ -2,7 +2,7 @@
 # Dependendo do horário, é considerado um conjunto de testes.
 # O workflow identifica qual cron disparou a execução
 
-name: app-delivery-test
+name: load-test
 
 on:
 
@@ -25,7 +25,7 @@ concurrency:
 jobs:
 
   Test:
-    name: "[app-delivery-test] Testes"
+    name: "[load-test] Testes"
     runs-on: ubuntu-latest
 
     strategy:
