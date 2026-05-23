@@ -8,7 +8,7 @@ on:
 
   schedule:
     - cron: '00 03 * * *'  # index
-    - cron: '33 03 * * *'   # load cron
+    - cron: '33 03 * * *'  # load cron
 
   workflow_dispatch: # permite executar manualmente
 
@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - cron: '00 03 * * *'  # 10 = 7
+          - cron: '00 03 * * *'
             test_file: './index.js' 
             
           - cron: '33 03 * * *'
