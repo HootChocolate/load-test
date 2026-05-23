@@ -102,7 +102,7 @@ jobs:
           publishLocation: 'pipeline'
   
   - job: TriggerPipelines 
-    displayName: "[app-delivery-test] TriggerPipelines"   # Trigger para disparar a pipeline de teste
+    displayName: "[load-test] TriggerPipelines"   # Trigger para disparar a pipeline de teste
     dependsOn: PublishArtifacts
     steps:
       - checkout: none
@@ -114,4 +114,4 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            echo "##vso[build.addbuildtag]trigger-app-delivery-test"
+            echo "##vso[build.addbuildtag]trigger-load-test"

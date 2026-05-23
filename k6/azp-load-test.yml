@@ -19,7 +19,7 @@ resources:
           - master
           - qa
         tags:
-          - trigger-app-delivery-test
+          - trigger-load-test
 
 # Set variables once
 variables:
@@ -30,7 +30,7 @@ stages:
     condition: always()
     jobs:
       - job: Test
-        displayName: "[azp-app-delivery-test] Testes"
+        displayName: "[azp-load-test] Testes"
         steps:
           - checkout: self
             displayName: "Git - Checkout"
