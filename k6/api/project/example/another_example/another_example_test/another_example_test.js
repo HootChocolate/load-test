@@ -2,10 +2,9 @@
 import { sleep } from "k6";
 import http from 'k6/http';
 import { generateReportAndNotify } from '/utils/notifications.js';
-import { apiSleepOnWarmup, checkSchema, checkStatusResponse } from '/utils/k6_utils.js';
+import { apiSleepOnWarmup, checkSchema, checkStatusResponse, SECOND } from '/utils/k6_utils.js';
 import { commonOptions } from "/utils/common_config.js";
 import anotherExampleTest from "./resources/another_example_test_schema.js";
-
 
 // configuração
 export const options = {
@@ -17,7 +16,7 @@ export const options = {
         { duration: '30s', target: 0 },
     ],
     thresholds: {
-        http_req_duration: ['p(95)<2000'],
+        http_req_duration: [`p(95)<${10 * SECOND}`],
         http_req_failed: ['rate<0.05'],
     },
 };

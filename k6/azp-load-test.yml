@@ -56,12 +56,7 @@ stages:
               targetType: 'inline'
               script: |
                 echo "File to run: $(K6_RUN_FILE_TEST)"
-
-          - task: Bash@3
-            displayName: "Bash - k6 - load/run Test"
-            inputs:
-              targetType: 'inline'
-              script: |
+                
                 echo "📂 Diretório atual:"
                 pwd
 
@@ -71,6 +66,12 @@ stages:
                 echo "📄 Listando $(Build.SourcesDirectory):"
                 ls -la $(Build.SourcesDirectory)
 
+          - task: Bash@3
+            displayName: "Bash - k6 - load/run Test"
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "🔥🚀🔥🚀"
                 echo "mkdir report..."
 
                 mkdir -p ./api/reports

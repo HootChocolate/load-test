@@ -8,6 +8,10 @@ const ajv = new Ajv();
 // lib de apoio de log
 import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
 
+export const SECOND = 1000
+export const MINUTE = 60 * SECOND
+
+
 /**
  * Classe destinada a métodos utilitários do k6
  */
