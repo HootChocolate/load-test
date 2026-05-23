@@ -160,7 +160,9 @@ export function generateReportAndNotify(data) {
         if (shouldNotify) { // foi marcado para notificar
             generatedReportMessage = generateFilteredReport(text_report, true);
 
-            sendMessage(__ENV.SEND_NOTIFICATION_TO, generatedReportMessage);
+            const msg = `   ❌ Atenção: Testes executados com erros!\n\n`;
+
+            sendMessage(__ENV.SEND_NOTIFICATION_TO, `${msg}${generatedReportMessage}`);
         } else {
             console.warn(`Skip sendMessage __ENV.SEND_NOTIFICATION: ${__ENV.SEND_NOTIFICATION}`);
         }
@@ -169,7 +171,7 @@ export function generateReportAndNotify(data) {
         if (shouldNotify && notifyOnSuccess) {
             generatedReportMessage = generateFilteredReport(text_report, false);
 
-            const msg = `Testes executados com sucesso\n\n`;
+            const msg = `    ✅ Testes executados com sucesso!\n\n`;
 
             sendMessage(__ENV.SEND_NOTIFICATION_TO, `${msg}${generatedReportMessage}`);
         } else {
@@ -271,7 +273,7 @@ function generateFilteredReport(mensagem, houve_erro) {
                     // Linha com nome do check que passou
                     // Já desconsiderando linha de checks tratado acima, e demais linhas de checks como http_req_duration
                     if (linha.includes('✓') && !linha.includes('✗')) {
-                        mensagem_montada.unshift(`${linha.trimEnd()}`); // cor verde
+                        mensagem_montada.unshift(`${linha.trim()}`); // cor verde
                     } else {
                         continue;
                     }
