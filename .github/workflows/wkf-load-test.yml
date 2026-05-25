@@ -5,10 +5,9 @@
 name: load-test
 
 on:
-
-  schedule:
-    - cron: '00 03 * * *'  # index
-    - cron: '33 03 * * *'  # load cron
+  schedule: # UTC-3
+      - cron: '50 22 * * *'  # index
+      - cron: '45 22 * * *'  # load cron
 
   workflow_dispatch: # permite executar manualmente
 
@@ -31,10 +30,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - cron: '00 03 * * *'
+          - cron: '45 22 * * *'
             test_file: './index.js' 
             
-          - cron: '33 03 * * *'
+          - cron: '50 22 * * *'
             test_file: './api/project/example/conjunto_example/example_test/example_test.js'
 
     steps:
@@ -91,7 +90,6 @@ jobs:
 # - mostra testes que passaram/falharam;
 # - adiciona annotations no código.
 #
-# O GitHub não possui uma aba "Test" tão completa como o Azure.
 # Os resultados geralmente aparecem em:
 # Pull Request → aba "Checks"
 # Commit → "Checks"
@@ -108,4 +106,4 @@ jobs:
         if: always()
         uses: mikepenz/action-junit-report@v4  # action
         with:
-          report_paths: './k6/api/reports/k6-test_results-junit.xml'
+          report_paths: './api/reports/k6-test_results-junit.xml'
