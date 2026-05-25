@@ -86,11 +86,10 @@ function sendMessageTelegram(message) {
     }
 
     const url = `https://api.telegram.org/${__ENV.TELEGRAM_BOT_ID}/sendMessage`;
-
     const body = {
         'chat_id': __ENV.TELEGRAM_CHAT_ID,
-        'parse_mode': 'HTML',
-        'text': message
+        'parse_mode': 'MarkdownV2',
+        'text': `\`\`\`yaml\n${message}\n\`\`\``
     }    
 
     const payload = JSON.stringify(body)
@@ -160,7 +159,7 @@ export function generateReportAndNotify(data) {
         if (shouldNotify) { // foi marcado para notificar
             generatedReportMessage = generateFilteredReport(text_report, true);
 
-            const msg = `   ❌ Atenção: Testes executados com erros!\n\n`;
+            const msg = `❌ Atenção: Testes executados com erros!\n\n`;
 
             sendMessage(__ENV.SEND_NOTIFICATION_TO, `${msg}${generatedReportMessage}`);
         } else {
@@ -171,7 +170,7 @@ export function generateReportAndNotify(data) {
         if (shouldNotify && notifyOnSuccess) {
             generatedReportMessage = generateFilteredReport(text_report, false);
 
-            const msg = `    ✅ Testes executados com sucesso!\n\n`;
+            const msg = `✅ Testes executados com sucesso!\n\n`;
 
             sendMessage(__ENV.SEND_NOTIFICATION_TO, `${msg}${generatedReportMessage}`);
         } else {

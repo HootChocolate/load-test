@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-    <testsuites tests="4" failures="1">
-      <testsuite name="k6 thresholds" tests="1" failures="1">
-        <testcase name="checks - rate &gt; 0.99" classname="Unnamed folder"><failure message="rate threshold failed: rate value: 0.6666666666666666, passes value: 4, fails value: 2" /></testcase>
+    <testsuites tests="6" failures="0">
+      <testsuite name="k6 thresholds" tests="1" failures="0">
+        <testcase name="checks - rate &gt; 0.99" classname="Unnamed folder" />
       </testsuite>
     </testsuites>
