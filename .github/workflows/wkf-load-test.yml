@@ -41,6 +41,12 @@ jobs:
       - name: Git - Checkout
         uses: actions/checkout@v4
 
+
+      - name: npm install
+        run: |
+          npm install 
+          npm run build
+
       - name: Debug - Print Variables
         run: |
           echo "File to run: ${{ matrix.test_file }}"
