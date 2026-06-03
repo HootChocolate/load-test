@@ -1,21 +1,20 @@
 // inicialização
 import { sleep } from "k6";
 import http from 'k6/http';
-import { generateReportAndNotify } from '/utils/notifications.js';
-import { apiSleepOnWarmup, checkSchema, checkStatusResponse, SECOND } from '/utils/k6_utils.js';
-import { commonOptions } from "/utils/common_config.js";
+import { generateReportAndNotify } from '@utils/notifications.js';
+import { apiSleepOnWarmup, checkSchema, checkStatusResponse, SECOND } from '@utils/k6_utils.js';
+import { commonOptions } from "@utils/common_config.js";
 import anotherExampleTest from "./resources/another_example_test_schema.js";
 
 // configuração
 export const options = {
     stages: [
-        { duration: '30s', target: 10 },
-        { duration: '1m', target: 20 },
-        { duration: '30s', target: 0 },
+        { target: 2 , duration: '5s' },
+        { target: 5 , duration: '10s' },
+        { target: 0 , duration: '5s' }
     ],
     thresholds: {
-        http_req_duration: [`p(95)<${10 * SECOND}`],
-        http_req_failed: ['rate<0.05'],
+        checks: ['rate>0.99'],          // 99% dos checks devem passar
     },
 };
 

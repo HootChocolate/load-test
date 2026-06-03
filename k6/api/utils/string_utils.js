@@ -13,3 +13,7 @@ export function toSentenceCase(text) {
 
 export const redTxt = (txt) => `\n\x1b[31m${txt}\x1b[0m`
 export const greenTxt = (txt) => `\n\x1b[32m${txt}\x1b[0m`
+
+export default {
+    toSentenceCase
+}

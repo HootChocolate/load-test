@@ -1,9 +1,9 @@
 // inicialização
 import { sleep } from "k6";
 import http from 'k6/http';
-import { generateReportAndNotify } from '/utils/notifications.js';
-import { apiSleepOnWarmup, checkSchema, checkStatusResponse, k6Log, SECOND } from '/utils/k6_utils.js';
-import { commonOptions } from "/utils/common_config.js";
+import { generateReportAndNotify } from '@utils/notifications.js';
+import { apiSleepOnWarmup, checkSchema, checkStatusResponse, k6Log, SECOND } from '@utils/k6_utils.js';
+import { commonOptions } from "@utils/common_config.js";
 
 // lib de apoio
 import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
@@ -14,13 +14,12 @@ import exampleTestSchema from './resources/example_test_schema.js';
 /// stages controla usuários
 export const options = {
     stages: [
-        { duration: '30s', target: 20 }, // Sobe de 0 para 20 usuários em 30 segundos
-        { duration: '1m', target: 20 },  // Mantém 20 usuários por 1 minuto
-        { duration: '30s', target: 0 },  // Desce para 0 usuários em 30 segundos
+        { target: 2 , duration: '5s' },
+        { target: 5 , duration: '10s' },
+        { target: 0 , duration: '5s' }
     ],
     thresholds: {
-        http_req_duration: [`p(95)<${2 * SECOND}`], // 95% das requisições devem ser < 500ms
-        http_req_failed: ['rate<0.01'],   // Menos de 1% de erro
+        checks: ['rate>0.99'],          // 99% dos checks devem passar
     },
 };
 

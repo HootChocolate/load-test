@@ -1,8 +1,8 @@
 // inicialização
 import { group } from "k6";
-import { generateReportAndNotify } from '/utils/notifications.js';
-import { commonOptions } from "/utils/common_config.js";
-import { apiSleepOnWarmup } from '/utils/k6_utils.js';
+import { generateReportAndNotify } from '@utils/notifications.js';
+import { commonOptions } from "@utils/common_config.js";
+import { apiSleepOnWarmup } from '@utils/k6_utils.js';
 
 // importa os warmup
 import { warmupAPI as warmup_example_test } from './conjunto_example/example_test/example_test.js';

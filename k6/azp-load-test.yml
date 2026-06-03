@@ -24,6 +24,10 @@ resources:
 # Set variables once
 variables:
   - group: k6-variables-example
+  - name: DASHBOARD_TESTS_RESULT
+    value: "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)&view=ms.vss-test-web.build-test-results-tab"
+  - name: PIPELINE_TEST
+    value: "$(Build.DefinitionName) $(Build.BuildId)"
 
 stages:
   - stage: Test
@@ -35,7 +39,7 @@ stages:
           - checkout: self
             displayName: "Git - Checkout"
 
-          - task: DownloadPipelineArtifact@2
+          - task: DownloadPipelineArtifact@2 # Baixa os artefatos publicados pela pipeline de schedule, que contém os arquivos de teste a serem executados
             displayName: "Download - Pipeline Artifacts [load-test-scheduled]"
             inputs:
               buildType: 'specific'
@@ -45,60 +49,152 @@ stages:
               branchName: '$(Build.SourceBranch)'
               targetPath: '$(Pipeline.Workspace)'
               itemPattern: |
-                K6Files/**
+                K6FilesToRun/**
+          
+          - task: Bash@3
+            displayName: "Build dist"
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd k6
 
-          - script: cat $(Pipeline.Workspace)/K6Files/pipeline.env
-            displayName: 'Script - Restore Pipeline Environment K6Files'
+                npm install
+                npm run build
+
+          - task: Bash@3
+            displayName: "Create report file"
+            inputs:
+              targetType: 'inline'
+              script: |
+                mkdir -p ./k6/api/reports
+                chmod -R 777 ./k6/api/reports
+
+                echo "Diretório criado!"
+                echo "./k6/api"
+                ls -la ./k6/api
+
 
           - task: Bash@3
             displayName: "Debug - Print Variables"
             inputs:
               targetType: 'inline'
               script: |
-                echo "File to run: $(K6_RUN_FILE_TEST)"
-                
-                echo "📂 Diretório atual:"
+                echo "👉 Diretório atual:"
                 pwd
 
-                echo "📄 Listando arquivos:"
-                ls -la
+                echo "👉 Listando SourcesDirectory $(Build.SourcesDirectory):"
+                ls -la $(Build.SourcesDirectory)/
 
-                echo "📄 Listando $(Build.SourcesDirectory):"
-                ls -la $(Build.SourcesDirectory)
+                echo "👉 Procurando k6-files.txt na Pipeline.Workspace"
+
+                find $(Pipeline.Workspace)/K6FilesToRun -name "k6-files.txt"
+
+                echo ""
+                echo "👉 Listando $(Build.SourcesDirectory):/k6"
+                ls -la $(Build.SourcesDirectory)/k6
+                
+                echo ""
+                echo "👉 Listando $(Build.SourcesDirectory):/k6/api"
+                ls -la $(Build.SourcesDirectory)/k6/api
+
+                echo ""
+                echo "👉 Listando $(Build.SourcesDirectory):/k6/api/reports"
+                ls -la $(Build.SourcesDirectory)/k6/api/reports
+
+                echo ""
+                echo "👉 Find js file on /dist folder "
+                find $(Build.SourcesDirectory)/k6/dist -name "*.js"
 
           - task: Bash@3
-            displayName: "Bash - k6 - load/run Test"
+            displayName: "Run all K6 tests"
             inputs:
               targetType: 'inline'
               script: |
-                echo "🔥🚀🔥🚀"
-                echo "mkdir report..."
+                FILES_TO_RUN="$(Pipeline.Workspace)/K6FilesToRun/k6-files.txt"  # encontra testes para execução
+                FAILED_FILES=() # arquivos que falharem
+                EXIT_CODE=0 # default é 0, se der erro será 1, ai da erro na task de execução. Se um teste, da bateria falhar, marcará a task como falhada
 
-                mkdir -p ./api/reports
-                chmod -R 777 ./api/reports
+                if [[ ! -f "$FILES_TO_RUN" ]]; then
+                    echo "❌ File to execution not found: $FILES_TO_RUN"
+                    exit 1
+                fi
+
+                echo "👉 Published files: $FILES_TO_RUN"
                 
-                echo "run..."
-                docker run --rm \
-                -e API_BASE_URL=$(API_BASE_URL) \
-                -e API_WARMUP_IN_SECONDS=$(API_WARMUP_IN_SECONDS) \
-                -e TELEGRAM_BOT_ID=$(TELEGRAM_BOT_ID) \
-                -e TELEGRAM_CHAT_ID=$(TELEGRAM_CHAT_ID) \
-                -e NOTIFY_ON_SUCCESS=$(NOTIFY_ON_SUCCESS) \
-                -e SEND_NOTIFICATION=$(SEND_NOTIFICATION) \
-                -e SEND_NOTIFICATION_TO=$(SEND_NOTIFICATION_TO) \
-                -e K6_OUT=experimental-prometheus-rw \
-                -e K6_PROMETHEUS_RW_SERVER_URL=$(K6_PROMETHEUS_URL) \
-                -e K6_PROMETHEUS_RW_USERNAME=$(K6_PROMETHEUS_USER) \
-                -e K6_PROMETHEUS_RW_PASSWORD=$(K6_PROMETHEUS_PASSWORD) \
-                -v $(Build.SourcesDirectory)/k6/utils:/utils \
-                -v $(pwd):/k6 \
-                -w /k6 \
-                -i grafana/k6 run $(K6_RUN_FILE_TEST)
+                echo "👉 Files to run:"
+                cat "$FILES_TO_RUN"
+                
+                # Itera no arquivo de teste, definido na pipeline anterior, executando um por um
+                while read -r FILE_TO_RUN
+                do
+                  [[ -z "$FILE_TO_RUN" ]] && continue
+
+                  # Cada teste sendo executado, gera um report. Ao publicar, publica-se todos
+                  REPORT_NAME=$(echo "$FILE_TO_RUN" | sed 's#^/##' | sed 's#/#_#g' | sed 's#\.js$##')
+
+                  echo ""
+                  echo "=================================🔥🚀🔥🚀==============================================="
+                  echo "Executing: $FILE_TO_RUN"
+                  echo "Report: $REPORT_NAME"
+                  echo "========================================================================================"
+
+                  if docker run --rm \
+                    -e API_BASE_URL=$(API_BASE_URL) \
+                    -e API_WARMUP_IN_SECONDS=$(API_WARMUP_IN_SECONDS) \
+                    -e TELEGRAM_BOT_ID=$(TELEGRAM_BOT_ID) \
+                    -e TELEGRAM_CHAT_ID=$(TELEGRAM_CHAT_ID) \
+                    -e NOTIFY_ON_SUCCESS=$(NOTIFY_ON_SUCCESS) \
+                    -e SEND_NOTIFICATION=$(SEND_NOTIFICATION) \
+                    -e SEND_NOTIFICATION_TO=$(SEND_NOTIFICATION_TO) \
+                    -e REPORT_NAME="$REPORT_NAME" \
+                    -e DASHBOARD_TESTS_RESULT="$(DASHBOARD_TESTS_RESULT)" \
+                    -e GRAFANA_DASHBOARD="$(GRAFANA_DASHBOARD)" \
+                    -e PIPELINE_TEST="$(PIPELINE_TEST)" \
+                    -v $(Build.SourcesDirectory)/k6:/k6 \
+                    -w /k6 \
+                    grafana/k6 run "$FILE_TO_RUN" < /dev/null # STDIN exit loop for each test
+                  then
+                      echo "✅ Success on execution of: $FILE_TO_RUN"
+                  else
+                      echo "❌ Fail on: $FILE_TO_RUN"
+                      EXIT_CODE=1 # para marcar a task como erro
+                      FAILED_FILES+=("$FILE_TO_RUN")  # para debug
+                  fi
+
+                done < "$FILES_TO_RUN"
+
+                echo ""
+                echo "=================================================="
+                echo "Execution Summary"
+                echo "=================================================="
+
+                if [[ ${#FAILED_FILES[@]} -gt 0 ]]; then
+                    echo ""
+                    echo "❌ The following tests failed:"
+
+                    for FILE in "${FAILED_FILES[@]}"
+                    do
+                        echo " - $FILE"
+                    done
+                else
+                    echo "✅ All tests passed successfully"
+                fi
+
+                exit $EXIT_CODE
+
+          - task: Bash@3
+            displayName: "Debug Reports"
+            condition: always()
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Reports:"
+                find $(Build.SourcesDirectory)/k6/api/reports -type f
 
           - task: PublishTestResults@2
             displayName: "PublishTestResults - k6 - Test Results"
             condition: always()
             inputs:
               testResultsFormat: 'JUnit'
-              testResultsFiles: './k6/api/reports/k6-test_results-junit.xml'
+              testResultsFiles: '$(Build.SourcesDirectory)/k6/api/reports/*.xml'
               failTaskOnMissingResultsFile: true

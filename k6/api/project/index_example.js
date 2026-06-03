@@ -1,14 +1,14 @@
 // inicialização
 import { group } from "k6";
-import { generateReportAndNotify } from '/utils/notifications.js';
+import { generateReportAndNotify } from '@utils/notifications.js';
 // bi
 import { warmupAPI as warmup_example_conjunto } from './example/index_conjunto_example.js';
 import index_example_conjunto from './example/index_conjunto_example.js';
 
 //libs de apoio
 import { describe } from "https://jslib.k6.io/expect/0.0.5/index.js";
-import { commonOptions } from "/utils/common_config.js";
-import { apiSleepOnWarmup } from '/utils/k6_utils.js';
+import { commonOptions } from "@utils/common_config.js";
+import { apiSleepOnWarmup } from '@utils/k6_utils.js';
 
 // configuracao
 export const options = commonOptions;

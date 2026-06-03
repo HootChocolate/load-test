@@ -28,7 +28,7 @@ export const MINUTE = 60 * SECOND
  * @param {number} status 
  * @returns {boolean}
  */
-export function checkStatusResponse(response, status) {
+export function checkStatusResponse(response, status, appendMessage) {
     if (!response) {
         throw new Error('checkStatusResponse: Response undefined');
     }
@@ -54,6 +54,8 @@ export function checkStatusResponse(response, status) {
             aux_log_err_message = '\nError parsing response body';
         }
     }
+    
+    const titleDescribe = appendMessage ? `Status code - ${appendMessage}` : `Status code`
 
     if (response.status === 0) {
         console.warn('\nStatus code 0\n');
@@ -62,9 +64,11 @@ export function checkStatusResponse(response, status) {
 
     const message = `Status code esperado: ${status} - Status code retornado: ${response.status}${aux_log_err_message}`;
 
-    describe('Check status code', () => {
+    describe(titleDescribe, () => {
         check(true, { [message]: response_status_ok });
     })
+
+    return response_status_ok
 }
 
 export function checkSchema(response, schema, appendMessage) {

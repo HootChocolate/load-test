@@ -1,6 +1,6 @@
 // inicialização
 import { group } from 'k6';
-import { generateReportAndNotify } from '/utils/notifications.js'
+import { generateReportAndNotify } from '@utils/notifications.js'
 
 // um import para warmUp e um para executar a default function
 import { warmupAPI as warmupAPI_example_project } from './api/project/index_example.js';
@@ -8,8 +8,8 @@ import { warmupAPI as warmupAPI_example_project } from './api/project/index_exam
 import index_example_project from './api/project/index_example.js';
 
 
-import { commonOptions } from '/utils/common_config.js';
-import { apiSleepOnWarmup } from '/utils/k6_utils.js';
+import { commonOptions } from '@utils/common_config.js';
+import { apiSleepOnWarmup } from '@utils/k6_utils.js';
 
 // configuração
 export const options = commonOptions;

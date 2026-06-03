@@ -5,10 +5,10 @@ ___
 ### 1. Fluxo da Pipeline
 
 - Execução completa, todos os testes:    
-![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow.png)
+![Fluxo da Pipeline](/k6/api/utils/resources/images/k6-flow.png)
 
 - Execução por pasta, ou teste específico:    
-![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow-2.png)
+![Fluxo da Pipeline](/k6/apiutils/resources/images/k6-flow-2.png)
 
 ### 2. Pré-requisitos
 - Node.js
@@ -101,16 +101,19 @@ Arquivo responsável pelos scripts de execução dos testes.
 
 Os scripts podem apontar para:
 
+- build - controi imports, definidos no arquivo `build.cjs`;
 - todos os testes;
 - uma pasta específica;
-- ou um único teste.
-
+- ou um único teste;
+- deps: Verifica dependência para o teste, do k6, e verifica imports do arquivo.
 Exemplo:
 ```json
 "scripts": {
-  "test:index": "dotenv -e .env k6 run ./index.js",
-  "test:index_pasta": "dotenv -e .env k6 run ./api/projeto/index_nome.js",
-  "test:meu_test": "dotenv -e .env k6 run ./api/projeto/pasta/meu_test/test.js"
+  "build": "node build.js",
+  "deps:index": "npm run build && dotenv -e .env k6 deps ./dist/index.js",
+  "test:index": "npm run build && dotenv -e .env k6 run ./dist/index.js",
+  "test:index_pasta": "npm run build && dotenv -e .env k6 run ./dist/api/projeto/index_nome.js",
+  "test:meu_test": "npm run build && dotenv -e .env k6 run ./dist/api/projeto/pasta/meu_test/test.js"
 }
 ```
 
@@ -122,10 +125,8 @@ Arquivo com configurações gerais de métricas e thresholds.
 Caso as métricas definidas não sejam atingidas, notificações podem ser enviadas.
 Essa configuração é útil para a execução de teste por pastas, principalmente.
 
-#### 4.8 `scripts/`
-Pasta utilizada para armazenar scripts auxiliares.
-
-Ao iniciar o projeto em uma máquina local, execute o arquivo `setup-k6-links.sh` para criar os links da pasta `/utils`.
+#### 4.8 `build/`
+ Pasta de arquivos para execução, resolvidos imports relativos.
 ___
 
 ### 5. Notificações
@@ -158,8 +159,9 @@ ___
 ├─────────── 📂 outros/
 │               ├── 📁 resources/
 │               └── 🧪 outros_test.js
-├── 📂 utils/
+├──── 📂 utils/
 ├──── 📁 resources/
+├── ⚙️ build.cjs
 ├── 🧪 index.js
 ├── ⚙️ .env
 ├── 🧾 readme.md
@@ -169,5 +171,5 @@ ___
 
   ### 7. Exemplo de notificação:   
 
-  ![Fluxo da Pipeline](/k6/utils/resources/images/k6-flow-notify.png)
+  ![Fluxo da Pipeline](/k6/api/utils/resources/images/k6-flow-notify.png)
   
