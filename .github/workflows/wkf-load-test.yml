@@ -31,10 +31,10 @@ jobs:
       matrix:
         include:
           - cron: '45 22 * * *'
-            test_file: './index.js' 
+            test_file: './dist/index.js' 
             
           - cron: '50 22 * * *'
-            test_file: './api/project/example/conjunto_example/example_test/example_test.js'
+            test_file: './dist/api/project/example/conjunto_example/example_test/example_test.js'
 
     steps:
 
